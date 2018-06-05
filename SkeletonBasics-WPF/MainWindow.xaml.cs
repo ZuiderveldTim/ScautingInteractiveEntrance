@@ -34,16 +34,16 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
     /// </summary>
     public partial class MainWindow : Window
     {
-         
+
         /// <summary>
         /// Width of output drawing
         /// </summary>
-        private const float RenderWidth = 640.0f;
-        private bool Head;
+        private const float RenderWidth = 1440.0f;
+        
         /// <summary>
         /// Height of our output drawing
         /// </summary>
-        private const float RenderHeight = 480.0f;
+        private const float RenderHeight = 1080.0f;
 
         /// <summary>
         /// Thickness of drawn joint lines
@@ -92,25 +92,25 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         private KinectSensor sensor;
         public void SetAngle(int angle)
         {
-            if(angle > 27)
-            {
-                angle = 27;
-            }
-            if (angle < -27)
-            {
-                angle = -27;
-            }
-            KinectSensor sensor = this.sensor;
-            try
-            {
-                sensor.ElevationAngle = angle;
 
-            }
-            catch (System.Exception e)
-            {
+                KinectSensor sensor = this.sensor;
+                try
+                {
+                    if (angle + CameraAngle > 27 || angle + CameraAngle < -27)
+                    {
+                        CameraAngle = 0;
+                    }
+                CameraAngle = CameraAngle + angle;
+                sensor.ElevationAngle = CameraAngle;
+                Thread.Sleep(1000);
+                }
+                catch (System.Exception e)
+                {
 
-            }
-        }
+                }
+         }
+        
+    
         public void AngleThread(int angle)
         {
             Thread t = new Thread(() => SetAngle(angle));
@@ -141,14 +141,26 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// </summary>
         /// <param name="skeleton">skeleton to draw clipping information for</param>
         /// <param name="drawingContext">drawing context to draw to</param>
+        private void AngleSolver(Skeleton skeleton)
+        {
+            if (skeleton.ClippedEdges.HasFlag(FrameEdges.Bottom) && !skeleton.ClippedEdges.HasFlag(FrameEdges.Top)) {
+                    AngleThread(-1);
+            }
+            if (skeleton.ClippedEdges.HasFlag(FrameEdges.Top) ) {
+                AngleThread(1);
+            }
+
+        }
         private static void RenderClippedEdges(Skeleton skeleton, DrawingContext drawingContext)
         {
             if (skeleton.ClippedEdges.HasFlag(FrameEdges.Bottom))
             {
+                
                 drawingContext.DrawRectangle(
                     Brushes.Red,
                     null,
                     new Rect(0, RenderHeight - ClipBoundsThickness, RenderWidth, ClipBoundsThickness));
+                
             }
 
             if (skeleton.ClippedEdges.HasFlag(FrameEdges.Top))
@@ -157,6 +169,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     Brushes.Red,
                     null,
                     new Rect(0, 0, RenderWidth, ClipBoundsThickness));
+               
             }
 
             if (skeleton.ClippedEdges.HasFlag(FrameEdges.Left))
@@ -165,6 +178,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     Brushes.Red,
                     null,
                     new Rect(0, 0, ClipBoundsThickness, RenderHeight));
+                
             }
 
             if (skeleton.ClippedEdges.HasFlag(FrameEdges.Right))
@@ -173,7 +187,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     Brushes.Red,
                     null,
                     new Rect(RenderWidth - ClipBoundsThickness, 0, ClipBoundsThickness, RenderHeight));
+                
             }
+            
         }
 
         /// <summary>
@@ -273,6 +289,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     foreach (Skeleton skel in skeletons)
                     {
                         RenderClippedEdges(skel, dc);
+                        AngleSolver(skel);
 
                         if (skel.TrackingState == SkeletonTrackingState.Tracked)
                         {
@@ -338,40 +355,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             foreach (Joint joint in skeleton.Joints)
             {
                 Brush drawBrush = null;
-                if (joint.JointType == JointType.Head)
-                {
-                    if (joint.TrackingState == JointTrackingState.Inferred || joint.TrackingState == JointTrackingState.NotTracked)
-                    {
-                        CameraAngle++;
-                        AngleThread(CameraAngle);
-                        
-                    }
-                    if (joint.TrackingState == JointTrackingState.Tracked)
-                    {
-                        Head = true;
-                    }
-                    else {
-                        Head = false;
-                    }
 
-                    
-                  
-                }
-                if (CameraAngle == 27 || CameraAngle == -27)
-                {
-                    CameraAngle = 0;
-                    AngleThread(CameraAngle);
-                }
-                if (joint.JointType == JointType.KneeLeft && Head == true)
-                {
-                    
-                    if (joint.TrackingState == JointTrackingState.Inferred || joint.TrackingState == JointTrackingState.NotTracked)
-                    {
-                        CameraAngle--;
-                        AngleThread(CameraAngle);
 
-                    }
-                }
                 if (joint.TrackingState == JointTrackingState.Tracked)
                 {
                     drawBrush = this.trackedJointBrush;                    
@@ -407,7 +392,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             // Convert point to depth space.  
             // We are not using depth directly, but we do want the points in our 640x480 output resolution.
             DepthImagePoint depthPoint = this.sensor.CoordinateMapper.MapSkeletonPointToDepthPoint(skelpoint, DepthImageFormat.Resolution640x480Fps30);
-            return new Point(depthPoint.X, depthPoint.Y);
+            
+            return new Point((depthPoint.X + RenderHeight / 2), (depthPoint.Y + RenderWidth / 2));
         }
 
         /// <summary>

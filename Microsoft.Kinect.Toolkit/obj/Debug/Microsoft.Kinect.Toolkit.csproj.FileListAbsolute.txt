@@ -1,0 +1,17 @@
+C:\Users\tim_z\source\repos\ScautingInteractiveEntrance\Microsoft.Kinect.Toolkit\bin\Debug\Microsoft.Kinect.Toolkit.dll
+C:\Users\tim_z\source\repos\ScautingInteractiveEntrance\Microsoft.Kinect.Toolkit\bin\Debug\Microsoft.Kinect.Toolkit.pdb
+C:\Users\tim_z\source\repos\ScautingInteractiveEntrance\Microsoft.Kinect.Toolkit\bin\Debug\Microsoft.Kinect.Toolkit.dll.CodeAnalysisLog.xml
+C:\Users\tim_z\source\repos\ScautingInteractiveEntrance\Microsoft.Kinect.Toolkit\bin\Debug\Microsoft.Kinect.Toolkit.dll.lastcodeanalysissucceeded
+C:\Users\tim_z\source\repos\ScautingInteractiveEntrance\Microsoft.Kinect.Toolkit\bin\Debug\Microsoft.Kinect.dll
+C:\Users\tim_z\source\repos\ScautingInteractiveEntrance\Microsoft.Kinect.Toolkit\bin\Debug\Microsoft.Kinect.xml
+C:\Users\tim_z\source\repos\ScautingInteractiveEntrance\Microsoft.Kinect.Toolkit\obj\Debug\Microsoft.Kinect.Toolkit.csprojResolveAssemblyReference.cache
+C:\Users\tim_z\source\repos\ScautingInteractiveEntrance\Microsoft.Kinect.Toolkit\obj\Debug\KinectSensorChooserUI.baml
+C:\Users\tim_z\source\repos\ScautingInteractiveEntrance\Microsoft.Kinect.Toolkit\obj\Debug\KinectSensorChooserUI.g.cs
+C:\Users\tim_z\source\repos\ScautingInteractiveEntrance\Microsoft.Kinect.Toolkit\obj\Debug\Microsoft.Kinect.Toolkit_MarkupCompile.cache
+C:\Users\tim_z\source\repos\ScautingInteractiveEntrance\Microsoft.Kinect.Toolkit\obj\Debug\Microsoft.Kinect.Toolkit.g.resources
+C:\Users\tim_z\source\repos\ScautingInteractiveEntrance\Microsoft.Kinect.Toolkit\obj\Debug\Microsoft.Kinect.Toolkit.Properties.Resources.resources
+C:\Users\tim_z\source\repos\ScautingInteractiveEntrance\Microsoft.Kinect.Toolkit\obj\Debug\Microsoft.Kinect.Toolkit.csproj.GenerateResource.cache
+C:\Users\tim_z\source\repos\ScautingInteractiveEntrance\Microsoft.Kinect.Toolkit\obj\Debug\Microsoft.Kinect.Toolkit.csproj.CoreCompileInputs.cache
+C:\Users\tim_z\source\repos\ScautingInteractiveEntrance\Microsoft.Kinect.Toolkit\obj\Debug\Microsoft.Kinect.Toolkit.csproj.CopyComplete
+C:\Users\tim_z\source\repos\ScautingInteractiveEntrance\Microsoft.Kinect.Toolkit\obj\Debug\Microsoft.Kinect.Toolkit.dll
+C:\Users\tim_z\source\repos\ScautingInteractiveEntrance\Microsoft.Kinect.Toolkit\obj\Debug\Microsoft.Kinect.Toolkit.pdb
