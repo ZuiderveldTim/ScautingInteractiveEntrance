@@ -26,6 +26,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
     using Microsoft.Kinect;
     using System.Threading;
     using System.Diagnostics;
+    using System.Windows.Media.Imaging;
+    using System.Collections.Generic;
+    using Microsoft.Samples.Kinect.WpfViewers;
 
 
 
@@ -38,12 +41,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// <summary>
         /// Width of output drawing
         /// </summary>
-        private const float RenderWidth = 1440.0f;
+        private const float RenderWidth = 640.0f;
         
         /// <summary>
         /// Height of our output drawing
         /// </summary>
-        private const float RenderHeight = 1080.0f;
+        private const float RenderHeight = 480.0f;
 
         /// <summary>
         /// Thickness of drawn joint lines
@@ -65,7 +68,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// Brush used to draw skeleton center point
         /// </summary>
         private readonly Brush centerPointBrush = Brushes.Blue;
-
+      
         /// <summary>
         /// Brush used for drawing joints that are currently tracked
         /// </summary>
@@ -85,6 +88,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// Pen used for drawing bones that are currently inferred
         /// </summary>        
         private readonly Pen inferredBonePen = new Pen(Brushes.Gray, 1);
+
+        private WriteableBitmap colorBitmap;
+        private byte[] colorPixels;
 
         /// <summary>
         /// Active Kinect sensor
@@ -191,7 +197,24 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
             
         }
+        private void SensorColorFrameReady(object sender, ColorImageFrameReadyEventArgs e)
+        {
+            using (ColorImageFrame colorFrame = e.OpenColorImageFrame())
+            {
+                if (colorFrame != null)
+                {
+                    // Copy the pixel data from the image to a temporary array
+                    colorFrame.CopyPixelDataTo(this.colorPixels);
 
+                    // Write the pixel data into our bitmap
+                    this.colorBitmap.WritePixels(
+                        new Int32Rect(0, 0, this.colorBitmap.PixelWidth, this.colorBitmap.PixelHeight),
+                        this.colorPixels,
+                        this.colorBitmap.PixelWidth * sizeof(int),
+                        0);
+                }
+            }
+        }
         /// <summary>
         /// Execute startup tasks
         /// </summary>
@@ -223,6 +246,17 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             if (null != this.sensor)
             {
+                // Turn on the color stream to receive color frames
+                this.sensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
+                // Allocate space to put the pixels we'll receive
+                this.colorPixels = new byte[this.sensor.ColorStream.FramePixelDataLength];
+                // This is the bitmap we'll display on-screen
+                this.colorBitmap = new WriteableBitmap(this.sensor.ColorStream.FrameWidth, this.sensor.ColorStream.FrameHeight, 96.0, 96.0, PixelFormats.Bgr32, null);
+                // Set the image we display to point to the bitmap where we'll put the image data
+                this.ColorImage.Source = this.colorBitmap;
+
+                // Add an event handler to be called whenever there is new color frame data
+                this.sensor.ColorFrameReady += this.SensorColorFrameReady;
                 // Turn on the skeleton stream to receive skeleton frames
                 this.sensor.SkeletonStream.Enable();
 
@@ -242,10 +276,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
             }
 
-            if (null == this.sensor)
-            {
-                this.statusBarText.Text = Properties.Resources.NoKinectReady;
-            }
+            
         }
 
         /// <summary>
@@ -282,7 +313,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             using (DrawingContext dc = this.drawingGroup.Open())
             {
                 // Draw a transparent background to set the render size
-                dc.DrawRectangle(Brushes.Black, null, new Rect(0.0, 0.0, RenderWidth, RenderHeight));
+                //dc.DrawRectangle(Brushes.Black, null, new Rect(0.0, 0.0, RenderWidth, RenderHeight));
 
                 if (skeletons.Length != 0)
                 {
@@ -376,7 +407,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     else
                     {
                         drawingContext.DrawEllipse(drawBrush, null, this.SkeletonPointToScreen(joint.Position), JointThickness, JointThickness);
-                        
+                        //drawingContext.DrawEllipse(drawBrush, null, joint.MappedPoint, JointThickness * this.ScaleFactor, JointThickness * this.ScaleFactor);
                     }
                 }
             }
@@ -393,17 +424,25 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             // We are not using depth directly, but we do want the points in our 640x480 output resolution.
             DepthImagePoint depthPoint = this.sensor.CoordinateMapper.MapSkeletonPointToDepthPoint(skelpoint, DepthImageFormat.Resolution640x480Fps30);
             
-            return new Point((depthPoint.X + RenderHeight / 2), (depthPoint.Y + RenderWidth / 2));
+            return new Point((depthPoint.X), (depthPoint.Y));
+        }
+        private Point UpdateDraw(Joint joint)
+        {
+
+            ColorImagePoint colorPoint = this.sensor.CoordinateMapper.MapSkeletonPointToColorPoint(joint.Position, ColorImageFormat.RgbResolution640x480Fps30);
+
+            return new Point(colorPoint.X, colorPoint.Y);
+
         }
 
-        /// <summary>
-        /// Draws a bone line between two joints
-        /// </summary>
-        /// <param name="skeleton">skeleton to draw bones from</param>
-        /// <param name="drawingContext">drawing context to draw to</param>
-        /// <param name="jointType0">joint to start drawing from</param>
-        /// <param name="jointType1">joint to end drawing at</param>
-        private void DrawBone(Skeleton skeleton, DrawingContext drawingContext, JointType jointType0, JointType jointType1)
+            /// <summary>
+            /// Draws a bone line between two joints
+            /// </summary>
+            /// <param name="skeleton">skeleton to draw bones from</param>
+            /// <param name="drawingContext">drawing context to draw to</param>
+            /// <param name="jointType0">joint to start drawing from</param>
+            /// <param name="jointType1">joint to end drawing at</param>
+            private void DrawBone(Skeleton skeleton, DrawingContext drawingContext, JointType jointType0, JointType jointType1)
         {
             Joint joint0 = skeleton.Joints[jointType0];
             Joint joint1 = skeleton.Joints[jointType1];
@@ -432,25 +471,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             drawingContext.DrawLine(drawPen, this.SkeletonPointToScreen(joint0.Position), this.SkeletonPointToScreen(joint1.Position));
         }
 
-        /// <summary>
-        /// Handles the checking or unchecking of the seated mode combo box
-        /// </summary>
-        /// <param name="sender">object sending the event</param>
-        /// <param name="e">event arguments</param>
-        private void CheckBoxSeatedModeChanged(object sender, RoutedEventArgs e)
-        {
-            if (null != this.sensor)
-            {
-                if (this.checkBoxSeatedMode.IsChecked.GetValueOrDefault())
-                {
-                    this.sensor.SkeletonStream.TrackingMode = SkeletonTrackingMode.Seated;
-                }
-                else
-                {
-                    this.sensor.SkeletonStream.TrackingMode = SkeletonTrackingMode.Default;
-                }
-            }
-        }
+        
+        
     }
 
 }
